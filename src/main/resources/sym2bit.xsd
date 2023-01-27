@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema 
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" jaxb:version="2.1"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	
+	<xs:annotation>
+		<xs:documentation> 
+		  Schema for XML documents in DVT that define a Symbol-ToBit mapping.  Note that
+		  the XML document format was determined long before Schemas and JAXB were introduced
+		  here, so this gets unnecessarily convoluted to maintain backwards compatibility.
+    	</xs:documentation>
+		<xs:appinfo>
+          <jaxb:globalBindings 
+          collectionType="java.util.ArrayList" />
+        </xs:appinfo>
+	</xs:annotation>
+  
+	<xs:simpleType name="FragmentsType">
+		<xs:annotation>
+			<xs:documentation>
+				Holds the fragments of a symbol to bit mapping. Each fragment represents the bit 
+				value assigned to a specific point in the constellation.  Each fragment
+				must therefore have the same length to make physical sense, although XML Schemas
+				cannot enforce this requirement.  A fragment is a whitespace-delimited collection 
+				of the characters 0, 1, and ".".
+								
+				Within the fragment, a 0 indicates that this position is a 0 bit, 
+				and 1 indicates a 1-bit.  "." indicates that this {absolute, relative} fragment does not influence the setting of
+				this bit (such a bit will instead be controlled by the corresponding {relative, absolute} fragment).  
+			</xs:documentation>
+		</xs:annotation>
+		<xs:list>
+		  <xs:simpleType>
+        	<xs:restriction base="xs:token">
+	       		<xs:pattern value="[01\.]+"></xs:pattern>
+             </xs:restriction>
+            </xs:simpleType>
+	     </xs:list>
+	</xs:simpleType>
+
+    <xs:attribute name="src" type="xs:string"/>
+    <xs:attribute name="name" type="xs:string"/>
+
+	<xs:simpleType name="SubsetType">
+        <xs:annotation>
+            <xs:documentation>
+                Multi-level coding is a communications technique that uses one or more
+                rails of the constellation to separate the constellation into multiple 
+                subsets.  The subsets experience greater separation, which lowers their Bit Error Rate (BER).
+                An expensive convolutional code (3/4 or even higher) is then applied to the separating
+                rail only.  Now the rail bit(s) have a low error rate, allowing received points to be 
+                allocated to the correct subset, resulting in a low BER for the other rails without paying 
+                the extra cost of the convolutional code. 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:list itemType="xs:int"></xs:list>
+    </xs:simpleType>
+
+	<xs:complexType name="BaseSym2bitType">
+       <xs:annotation>
+            <xs:documentation>
+                This type defines a mapping from constellation points to bit patterns.  Absolute fragments
+                define bit patterns that are always applied at a constellation point.  Differential
+                patterns define bit patterns that are applied based on the rotation since the previously 
+                transmitted point.  Constellations can be absolute, differential, or a mixture.
+                
+                XML Schemas validation semantics do not capture all restrictions on valid fragments.  To wit:
+                
+                1) It is an error for the number of absolute fragments to differ in number or size from the 
+                differential fragments.
+                
+                2) It is an error for any bit position to be "." in both the absolute and differential 
+                fragment lists, as this fails to specify a value for that bit. 
+            </xs:documentation>
+        </xs:annotation>
+       <xs:choice minOccurs="0" maxOccurs="1">
+        <xs:sequence>
+          	<xs:element name="absolute" type="FragmentsType" />
+           	<xs:element name="subset" type="SubsetType" />
+         	<xs:element name="differential" type="FragmentsType"/>
+       	</xs:sequence>
+       </xs:choice>
+	</xs:complexType>
+	
+    <xs:complexType name="Sym2bitType">
+        <xs:complexContent>
+            <xs:extension base="BaseSym2bitType">
+                <xs:attribute ref="name" use="optional" />
+                <xs:attribute ref="src" use="optional" />
+             </xs:extension>
+        </xs:complexContent>        
+    </xs:complexType>
+     
+
+    <xs:complexType name="BaseSym2bitsType">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="sym2bit" type="Sym2bitType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="Sym2bitsType">
+        <xs:complexContent>
+            <xs:extension base="BaseSym2bitsType">
+                <xs:attribute ref="src" use="optional" />        
+             </xs:extension>
+        </xs:complexContent>        
+    </xs:complexType>
+       
+	<xs:simpleType name="BasePointsType">
+      <xs:annotation>
+            <xs:documentation>
+                This type defines the X and Y coordinates of each point in the constellation. 
+            </xs:documentation>
+      </xs:annotation>
+      <xs:list itemType="xs:float"></xs:list>
+   	</xs:simpleType>
+
+    <xs:complexType name="PointsType">
+        <xs:simpleContent>
+            <xs:extension base="BasePointsType">
+                <xs:attribute ref="src" use="optional" />        
+             </xs:extension>
+        </xs:simpleContent>        
+    </xs:complexType>  	
+    
+	<xs:simpleType name="BaseNumberingType">
+      <xs:annotation>
+            <xs:documentation>
+                This type defines the numbering schemes that different demodulators apply to the 
+                constellation.  A demodulator will convert waveform data to symbols, but does not 
+                typically know which symbol-to-bit mapping the transmitter was actually employing.  It
+                will thus assign arbitrary values to each symbol (there are many possible orderings of a complex constellation) 
+                that it produces.  This field describes that arbitrary mapping. 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:list itemType="xs:nonNegativeInteger">
+		</xs:list>
+	</xs:simpleType>
+	
+    <xs:complexType name="NumberingType">
+        <xs:simpleContent>
+            <xs:extension base="BaseNumberingType">
+                <xs:attribute ref="src" use="optional" />        
+                <xs:attribute ref="name" use="optional" />
+             </xs:extension>
+        </xs:simpleContent>        
+    </xs:complexType> 
+    
+    <xs:complexType name="BaseNumberingsType">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="numbering" type="NumberingType"/>
+        </xs:choice>
+    </xs:complexType>
+    
+     <xs:complexType name="NumberingsType">
+        <xs:complexContent>
+            <xs:extension base="BaseNumberingsType">
+                <xs:attribute ref="src" use="optional" />        
+             </xs:extension>
+        </xs:complexContent>        
+    </xs:complexType>    
+    
+	<xs:complexType name="BaseConstelType">
+      <xs:annotation>
+            <xs:documentation>
+                This type contains all information needed to specify a family of 
+                demodulators' arbitrary symbol assignments for each point in the 
+                constellation, and a family of meanings that the transmitters assign to 
+                each point in the constellation.
+                
+                The constellation locations are specified by the points field.  
+                
+                All defined demodulator assignment schemes are described by the numberings fields.
+                
+                All defined transmitter encoding schemes are described by the sym2bit fields.
+                
+                It is an error for the points array to not be twice as long as the number of points in the
+                constellation (X and Y coordinates), or for any of the numberings or sym2bits mapping
+                to not have the same length as the number of points in the constellation.  XML Schema
+                validation cannot enforce this rule.   
+            </xs:documentation>
+      </xs:annotation>
+      <xs:choice minOccurs="0" maxOccurs="1">
+          <xs:sequence>
+          	<xs:element name="points" type="PointsType" minOccurs="0" maxOccurs="1"/>
+       	    <xs:element name="numberings" type="NumberingsType" minOccurs="0" maxOccurs="1"/>
+      	    <xs:element name="sym2bits" type="Sym2bitsType" minOccurs="0" maxOccurs="1"/>
+          </xs:sequence> 
+      </xs:choice>    
+	</xs:complexType>
+	
+	<xs:complexType name="ConstelType">
+	   <xs:complexContent>
+           <xs:extension base="BaseConstelType">
+                <xs:attribute ref="name" use="optional" />        
+                <xs:attribute ref="src" use="optional" />        
+             </xs:extension>	       
+	   </xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="BaseContreeType">
+     <xs:annotation>
+            <xs:documentation>
+                This type allows one file to specify many different constellations, e.g., 8PSK, 16 QAM, etc.   
+            </xs:documentation>
+     </xs:annotation>
+     <xs:choice>
+         <xs:choice minOccurs="0" maxOccurs="unbounded">
+         	<xs:element name="constel" type="ConstelType" />
+        </xs:choice>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="contree" type="ContreeType" />
+        </xs:choice>
+     </xs:choice>
+	</xs:complexType>
+	
+    <xs:complexType name="ContreeType">
+       <xs:complexContent>
+           <xs:extension base="BaseContreeType">
+                <xs:attribute ref="name" use="optional" />  
+                <xs:attribute ref="src" use="optional" />      
+             </xs:extension>           
+       </xs:complexContent>
+    </xs:complexType>
+    
+    <!--  viable documents -->	
+     <xs:element name="points" type="PointsType"/>
+     <xs:element name="numbering" type="NumberingType"/>
+     <xs:element name="numberings" type="NumberingsType"/>
+     <xs:element name="contree" type="ContreeType"/>
+     <xs:element name="constel" type="ConstelType"/>
+     <xs:element name="sym2bit" type="Sym2bitType"/>
+     <xs:element name="sym2bits" type="Sym2bitsType"/>
+     
+        	
+</xs:schema>

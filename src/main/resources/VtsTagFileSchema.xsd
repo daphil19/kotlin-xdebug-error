@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified">
+
+	<xs:element name="tagfile" type="tagfile" />
+
+	<xs:attribute name="majorVersion">
+		<xs:simpleType>
+			<xs:restriction base="xs:integer">
+				<xs:minInclusive value="2" />
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:attribute>
+
+	<xs:attribute name="minorVersion">
+		<xs:simpleType>
+			<xs:restriction base="xs:integer">
+				<xs:minInclusive value="0" />
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:attribute>
+
+	<xs:attribute name="sampleRate">
+		<xs:annotation>
+			<xs:documentation>
+				Positive definite sampling rate in Hertz.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:simpleType>
+			<xs:restriction base="xs:double">
+				<xs:minExclusive value="0" />
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:attribute>
+
+	<xs:attribute name="dataType">
+		<xs:annotation>
+			<xs:documentation>
+				Data Type of individual samples.
+				Restricted to
+				values of "Real" or "Complex"
+			</xs:documentation>
+		</xs:annotation>
+		<xs:simpleType>
+			<xs:restriction base="xs:token">
+				<xs:enumeration value="Real" />
+				<xs:enumeration value="Complex" />
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:attribute>
+
+	<xs:attribute name="sampleType">
+		<xs:annotation>
+			<xs:documentation>
+				Sample Type of individual samples in file.
+				Self-describing formats (MIDAS, WAVE) do not get a duplicate
+				sample
+				type.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:simpleType>
+			<xs:restriction base="xs:token">
+				<xs:enumeration value="8a" />
+				<xs:enumeration value="8A" />
+				<xs:enumeration value="8u" />
+				<xs:enumeration value="8U" />
+				<xs:enumeration value="8o" />
+				<xs:enumeration value="8t" />
+				<xs:enumeration value="16o" />
+				<xs:enumeration value="16or" />
+				<xs:enumeration value="16ol" />
+				<xs:enumeration value="16t" />
+				<xs:enumeration value="16tr" />
+				<xs:enumeration value="16tl" />
+				<xs:enumeration value="32f" />
+				<xs:enumeration value="32fr" />
+				<xs:enumeration value="32fl" />
+				<xs:enumeration value="32t" />
+				<xs:enumeration value="32tr" />
+				<xs:enumeration value="32tl" />
+				<xs:enumeration value="64f" />
+				<xs:enumeration value="64fl" />
+				<xs:enumeration value="MIDAS" />
+				<xs:enumeration value="WAV" />
+				<xs:enumeration value="wav" />
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:attribute>
+
+	<xs:complexType name="fileType">
+		<xs:attribute name="path" type="xs:token" use="required" />
+		<xs:attribute ref="sampleType" use="required" />
+		<xs:attribute ref="dataType" use="required" />
+		<xs:attribute ref="sampleRate" use="required" />
+		<xs:anyAttribute />
+	</xs:complexType>
+
+	<xs:simpleType name="axisType">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="SAMPLE" />
+			<xs:enumeration value="FREQUENCY" />
+			<xs:enumeration value="REAL" />
+			<xs:enumeration value="IMAG" />
+			<xs:enumeration value="AM" />
+			<xs:enumeration value="FM" />
+			<xs:enumeration value="PHASE" />
+			<xs:enumeration value="AMPLITUDE" />
+			<xs:enumeration value="BIN" />
+			<xs:enumeration value="COUNT" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="SnapToGridPositionType">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="MIN" />
+			<xs:enumeration value="CENTER" />
+			<xs:enumeration value="MAX" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="JavaAWTColorCode">
+		<xs:annotation>
+			<xs:documentation>
+				Hexadecimal number that can be decoded by
+				java.awt.Color.decode().
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:token">
+			<xs:pattern value="0x[0-9A-Fa-f]{6}" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="positiveDecimal">
+		<xs:restriction base="xs:decimal">
+			<xs:minExclusive value="0" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:complexType name="grid">
+		<xs:attribute name="name" use="required" />
+		<xs:attribute name="anchor" use="required">
+			<xs:simpleType>
+				<xs:restriction base="xs:double" />
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="interval" use="required">
+			<xs:simpleType>
+				<xs:restriction base="xs:double" />
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:anyAttribute />
+	</xs:complexType>
+
+	<xs:complexType name="baseTag" abstract="true">
+		<xs:attribute name="comment" type="xs:string" />
+		<xs:attribute name="label" use="required" type="xs:string" />
+		<xs:attribute name="locked" type="xs:boolean" default="false" />
+		<xs:attribute name="visible" type="xs:boolean" default="true" />
+		<xs:anyAttribute />
+	</xs:complexType>
+
+	<xs:complexType name="lineTag">
+		<xs:complexContent>
+			<xs:extension base="baseTag">
+				<xs:attribute name="value" use="required" type="xs:double" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="rangeTag">
+		<xs:complexContent>
+			<xs:extension base="baseTag">
+				<xs:attribute name="min" use="required" type="xs:double" />
+				<xs:attribute name="max" use="required" type="xs:double" />
+				<xs:attribute name="colorShadingTransparency">
+					<xs:annotation>
+						<xs:documentation>
+							The transparency of the color used for range shading. Takes precedence over the tag set's transparency.
+						</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0" />
+							<xs:maxInclusive value="100" />
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="boxTag">
+		<xs:complexContent>
+			<xs:extension base="baseTag">
+				<xs:attribute name="min1" use="required" type="xs:double" />
+				<xs:attribute name="max1" use="required" type="xs:double" />
+				<xs:attribute name="min2" use="required" type="xs:double" />
+				<xs:attribute name="max2" use="required" type="xs:double" />
+				<xs:attribute name="colorShadingTransparency">
+					<xs:annotation>
+						<xs:documentation>
+							The transparency of the color used for range shading. The individual tag's transparency takes precedence.
+						</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0" />
+							<xs:maxInclusive value="100" />
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="TagSetAttributeGroup">
+		<xs:attribute name="comment" type="xs:string" use="optional" />
+		<xs:attribute name="name" type="xs:string" use="optional" />
+		<xs:attribute name="visible" type="xs:boolean" default="true">
+			<xs:annotation>
+				<xs:documentation>
+					Indicates whether the tag(s) in this set should be
+					visible.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="color" type="JavaAWTColorCode" use="optional">
+			<xs:annotation>
+				<xs:documentation>
+					The color for the (unselected) tag(s) in this set.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="colorSelected" type="JavaAWTColorCode" use="optional">
+			<xs:annotation>
+				<xs:documentation>
+					The color for the selected tag(s) in this set.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="colorPersisted" type="JavaAWTColorCode"
+			use="optional">
+			<xs:annotation>
+				<xs:documentation>
+					The color for the tag(s) in this set when they are
+					displayed
+					("persisted") in modes/contexts other than their native
+					one.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:anyAttribute />
+	</xs:attributeGroup>
+
+	<xs:complexType name="abstractTagSet" abstract="true">
+		<xs:attributeGroup ref="TagSetAttributeGroup" />
+	</xs:complexType>
+
+	<xs:complexType name="lineTagSet">
+		<xs:complexContent>
+			<xs:extension base="abstractTagSet">
+				<xs:sequence>
+					<xs:element name="appinfo" type="appinfo" minOccurs="0"/>
+					<xs:choice minOccurs="0" maxOccurs="1">
+						<xs:element name="grid" type="grid" />
+					</xs:choice>
+					<xs:choice minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="tag" type="lineTag">
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+				<xs:attribute name="axis" type="axisType" use="required" />
+				<xs:anyAttribute />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="rangeTagSet">
+		<xs:complexContent>
+			<xs:extension base="abstractTagSet">
+				<xs:sequence>
+					<xs:element name="appinfo" type="appinfo" minOccurs="0"/>
+					<xs:choice minOccurs="0" maxOccurs="1">
+						<xs:element name="grid" type="grid" />
+					</xs:choice>
+					<xs:choice minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="tag" type="rangeTag" />
+					</xs:choice>
+				</xs:sequence>
+				<xs:attribute name="axis" type="axisType" use="required" />
+				<xs:attribute name="colorMin" type="JavaAWTColorCode" use="optional">
+					<xs:annotation>
+						<xs:documentation>
+							The color for the minimum value in this range.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="colorMax" type="JavaAWTColorCode" use="optional">
+					<xs:annotation>
+						<xs:documentation>
+							The color for the maximum value in this range.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="colorShading" type="JavaAWTColorCode" use="optional">
+					<xs:annotation>
+						<xs:documentation>
+							The color for the shading in between this range.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="colorShadingTransparency" use="optional">
+					<xs:annotation>
+						<xs:documentation>
+							The transparency of the color used for range shading. The individual tag's transparency takes precedence.
+						</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0" />
+							<xs:maxInclusive value="100" />
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:anyAttribute />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="boxTagSet">
+		<xs:complexContent>
+			<xs:extension base="abstractTagSet">
+				<xs:sequence>
+					<xs:element name="appinfo" type="appinfo" minOccurs="0"/>
+					<xs:choice minOccurs="0" maxOccurs="1">
+						<xs:element name="grid1" type="grid" />
+					</xs:choice>
+					<xs:choice minOccurs="0" maxOccurs="1">
+						<xs:element name="grid2" type="grid" />
+					</xs:choice>
+					<xs:choice minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="tag" type="boxTag" />
+					</xs:choice>
+				</xs:sequence>
+				<xs:attribute name="axis1" type="axisType" use="required" />
+				<xs:attribute name="axis2" type="axisType" use="required" />
+				<xs:attribute name="snapToGrid1" type="xs:boolean" use="optional">
+					<xs:annotation>
+						<xs:documentation>
+							Indicates whether each tag in this set should
+							"snap" to grid 1.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="snapToGrid2" type="xs:boolean" use="optional">
+					<xs:annotation>
+						<xs:documentation>
+							Indicates whether each tag in this set should
+							"snap" to grid 2.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="snapToGrid1Position" type="SnapToGridPositionType"
+					use="optional">
+					<xs:annotation>
+						<xs:documentation>
+							Indicates to which grid-1-cell-relative position
+							each tag in
+							this set should "snap".
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="snapToGrid2Position" type="SnapToGridPositionType"
+					use="optional">
+					<xs:annotation>
+						<xs:documentation>
+							Indicates to which grid-2-cell-relative position
+							each tag in
+							this set should "snap".
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="defaultBoxExtent1" type="positiveDecimal"
+					use="optional">
+					<xs:annotation>
+						<xs:documentation>
+							The default grid 1 extent ("width") for each tag
+							in this set.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="defaultBoxExtent2" type="positiveDecimal"
+					use="optional">
+					<xs:annotation>
+						<xs:documentation>
+							The default grid 2 extent ("height") for each
+							tag in this set.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="colorShading" type="JavaAWTColorCode">
+					<xs:annotation>
+						<xs:documentation>
+							The color for the shading in between this range.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="colorShadingTransparency">
+					<xs:annotation>
+						<xs:documentation>
+							The transparency of the color used for range shading. The individual tag's transparency takes precedence.
+						</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:integer">
+							<xs:minInclusive value="0" />
+							<xs:maxInclusive value="100" />
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+				<xs:anyAttribute />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="tagSet">
+		<xs:sequence>
+			<xs:element name="line" type="lineTagSet" minOccurs="0"
+				maxOccurs="unbounded" />
+			<xs:element name="range" type="rangeTagSet" minOccurs="0"
+				maxOccurs="unbounded" />
+			<xs:element name="box" type="boxTagSet" minOccurs="0"
+				maxOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="set" use="required" type="xs:token" />
+	</xs:complexType>
+
+	<xs:complexType name="appinfo">
+		<xs:sequence>
+			<xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:anyAttribute processContents="lax"/>
+	</xs:complexType>
+
+	<xs:complexType name="tagfile">
+		<xs:annotation>
+			<xs:documentation>
+				Uniqueness of line and range tag axis types is
+				enforced within a TagSet, but not between them. Some constraints
+				can't readily be expressed in XML Schema.
+
+				We allow more than one
+				validate chunk per file primarily to
+				accommodate streaming writers,
+				which must in exchange take on
+				the responsibility of not stuttering.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="appinfo" type="appinfo" minOccurs="0"/>
+			<xs:element name="samplefile" type="fileType" />
+			<xs:element name="tags" type="tagSet" minOccurs="1" maxOccurs="unbounded">
+				<xs:unique name="lineAxisUnique">
+					<xs:selector xpath="line" />
+					<xs:field xpath="@axis" />
+				</xs:unique>
+				<xs:unique name="rangeAxisUnique">
+					<xs:selector xpath="range" />
+					<xs:field xpath="@axis" />
+				</xs:unique>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute ref="majorVersion" use="required" />
+		<xs:attribute ref="minorVersion" use="required" />
+		<xs:anyAttribute />
+	</xs:complexType>
+</xs:schema>

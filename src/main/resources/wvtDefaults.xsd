@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:element name="Entries">
+		<xs:complexType>
+			<!-- <xs:sequence minOccurs="1" maxOccurs="1"> <xs:element name="entry"> 
+				<xs:attribute name="key" fixed="WVT_VERSION_NUMBER" type="xs:string"/> <xs:attribute 
+				name="value" type="xs:string"/> </xs:element> </xs:sequence> -->
+			<xs:sequence minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="entry">
+					<xs:complexType>
+						<xs:attribute name="key" type="xs:string" />
+						<xs:attribute name="value" type="xs:string" />
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+</xs:schema>
