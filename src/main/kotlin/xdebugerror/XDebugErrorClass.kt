@@ -14,9 +14,7 @@ class XDebugErrorClass {
 
         channel.send("HI")
 
-        withContext(Dispatchers.IO) {
-            println("hello world!")
-        }
+        println("Done!") // removing this causes the code to complete without error, but any meaningful statement I've tried here has created the error
     }
 }
 
