@@ -1,5 +1,5 @@
 # kotlin-xdebug-error
-A simple example that exemplifies an error when using xdebug.
+A simple example that exemplifies an error when using `-XDebug`.
 
 # Building/running
 The error can be produced either on the command line via `./gradlew run` or by opening the project in Intellij.
@@ -9,7 +9,7 @@ There are a couple of files in this project, each demonstrating a way to get the
 
 `XDebugError` shows the initial minimum reproducible example of the error found.
 
-`XDebugErrorClass` is an example of how to get the error to occurr in a class during class construction time.
+`XDebugErrorClass` is an example of how to get the error to occur in a class during class construction time.
 
 `XDebugErrorAnnotation` is another minimum reproducible example that identifies the potential impact of the annotation(s) on `Path()`. Thanks to @ephemient in the [kotlin slack](https://kotlinlang.slack.com) for producing this example.
 
